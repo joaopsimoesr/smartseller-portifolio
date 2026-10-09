@@ -11,6 +11,14 @@
 - [REGRAS.md](REGRAS.md): as 24 regras, com entradas, saídas, valores fictícios e onde estão
 - [FUNCIONALIDADES.md](FUNCIONALIDADES.md): o que existe além do cálculo e de qual versão veio
 
+## Fichas de exemplo
+
+Geradas por `npm run exemplos -w api`, só com dados **fictícios** (cliente, CPF `000.000.001-91`, endereço e empreendimento inventados):
+
+| Ficha de Negociação | Ficha de Cadastro |
+|---|---|
+| [![Ficha de Negociação](docs/exemplos/ficha-negociacao-exemplo.png)](docs/exemplos/ficha-negociacao-exemplo.pdf) | [![Ficha de Cadastro](docs/exemplos/ficha-cadastro-exemplo.png)](docs/exemplos/ficha-cadastro-exemplo.pdf) |
+
 ## Como rodar
 
 Requisitos: Node 20 ou superior. Não precisa de banco, Docker nem variáveis de ambiente.
@@ -61,6 +69,7 @@ versao-local/
   api/src/servicos/            simulação, repositório + importação CSV, shadow mode, login
   api/src/pdf/                 ficha de negociação e ficha de cadastro (template + preenchimento)
   api/src/http/                rotas, validação Joi, contrato de erros
+  api/scripts/gerar-exemplos.js gera docs/exemplos/*.pdf (dados fictícios)
   api/tests/                   regras.test.js (1 bloco por regra), servicos.test.js, api.test.js
   web/src/                     React + TypeScript: login, assistente em 7 etapas, admin
 ```

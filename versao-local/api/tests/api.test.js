@@ -97,7 +97,7 @@ describe('vendedor', () => {
   test.each([
     ['/api/fichas/negociacao', plano()],
     ['/api/fichas/negociacao/linear', { empreendimentoId: 'parque-delta', categoriaPreco: 'Prata', quantidadeCotas: 1, dataVenda: '2026-03-13' }],
-    ['/api/fichas/cadastro', { cliente: { nome: 'Cliente Exemplo', cpf: '529.982.247-25', uf: 'sp' }, negociacao: { empreendimento: 'Residencial Alfa', cotas: 2 } }],
+    ['/api/fichas/cadastro', { cliente: { nome: 'Cliente Exemplo', cpf: '000.000.001-91', uf: 'sp' }, negociacao: { empreendimento: 'Residencial Alfa', cotas: 2 } }],
   ])('PDF %s', async (rota, corpo) => {
     const r = await request(app).post(rota).set('Authorization', vendedor).send(corpo).buffer(true).parse(binario).expect(200);
     expect(r.headers['content-type']).toMatch(/application\/pdf/);

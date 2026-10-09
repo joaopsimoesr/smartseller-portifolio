@@ -11,3 +11,5 @@ coverage/
 *.csv
 *.pdf
 package-lock.json
+!docs/exemplos/*.pdf
+!docs/exemplos/*.png

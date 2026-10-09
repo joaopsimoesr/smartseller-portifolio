@@ -167,8 +167,8 @@ describe('fichas PDF', () => {
 
 describe('validação de CPF', () => {
   test('dígitos verificadores', () => {
-    expect(cpfValido('529.982.247-25')).toBe(true);
-    expect(cpfValido('529.982.247-24')).toBe(false);
+    expect(cpfValido('000.000.001-91')).toBe(true);
+    expect(cpfValido('000.000.001-92')).toBe(false);
     expect(cpfValido('111.111.111-11')).toBe(false);
   });
 });
