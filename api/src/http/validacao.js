@@ -60,4 +60,32 @@ const esquemaDiaUtil = Joi.object({
   dias: Joi.number().integer().min(1).max(30).default(1),
 });
 
-module.exports = { esquemaPlanoPadrao, esquemaModeloLinear, esquemaDiaUtil };
+const esquemaLogin = Joi.object({
+  email: Joi.string().max(200).required(),
+  senha: Joi.string().max(200).required(),
+});
+
+const esquemaImportacao = Joi.object({
+  empreendimentoId: Joi.string().required(),
+  tipo: Joi.string().valid('LINEAR', 'EXCECOES').required(),
+  vigenteDesde: dataISO.required(),
+  csv: Joi.string().max(200_000).required(),
+});
+
+const esquemaShadow = Joi.object({
+  valorUnidade: dinheiro.required(),
+  percentualSinal: Joi.number().positive().max(100),
+  saldo: dinheiro.required(),
+  parcelasSaldo: parcelas.required(),
+  dataBase: dataISO.required(),
+  meses: Joi.number().integer().min(-120).max(120).required(),
+});
+
+module.exports = {
+  esquemaPlanoPadrao,
+  esquemaModeloLinear,
+  esquemaDiaUtil,
+  esquemaLogin,
+  esquemaImportacao,
+  esquemaShadow,
+};

@@ -7,11 +7,8 @@ const express = require('express');
 const { REGRAS } = require('../config/regras');
 const datas = require('../domain/datas');
 const { simularPlanoPadrao, simularModeloLinear } = require('../domain/simulacao');
-const {
-  esquemaPlanoPadrao,
-  esquemaModeloLinear,
-  esquemaDiaUtil,
-} = require('./validacao');
+const { converterCSV, EXEMPLO_CSV, COLUNAS } = require('../services/importacao');
+const v = require('./validacao');
 
 function validar(esquema, origem = 'body') {
   return (req, _res, next) => {
@@ -25,51 +22,115 @@ function validar(esquema, origem = 'body') {
   };
 }
 
-function criarRotas({ repoEmpreendimentos, cacheRegras }) {
+/** Encaminha rejeições de handlers assíncronos ao tratador de erros. */
+const assincrono = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+function criarRotas({ repoEmpreendimentos: repo, cacheRegras, auth, shadow, fichas }) {
   const r = express.Router();
+  const ok = (res, data, status = 200) => res.status(status).json({ success: true, data });
+  const admin = auth.exigir('ADMIN');
 
-  r.get('/health', (_req, res) => {
-    res.json({ success: true, data: { status: 'ok', regrasVersao: REGRAS.versao } });
-  });
+  const sincronizarCache = () => cacheRegras.sincronizar(repo.listar().map((e) => repo.buscarPorId(e.id)));
 
-  r.get('/regras', (_req, res) => {
-    res.json({ success: true, data: REGRAS });
-  });
+  // --- Público: simulação ------------------------------------------------------
+  r.get('/health', (_req, res) => ok(res, { status: 'ok', regrasVersao: REGRAS.versao }));
+
+  r.get('/regras', (_req, res) => ok(res, REGRAS));
 
   r.get('/empreendimentos', (_req, res) => {
-    const data = repoEmpreendimentos.listar().map((e) => ({
-      id: e.id,
-      nome: e.nome,
-      categoria: e.categoria,
-      percentualSinal: e.percentualSinal ?? REGRAS.sinal.percentualPadrao,
-      promocaoEntrada: e.promocaoEntrada ?? null,
-      excecoesEntrada: e.excecoesEntrada ?? null,
-      categoriasLinear: e.tabelaLinear ? e.tabelaLinear.map((l) => l.categoriaPreco) : [],
-    }));
-    res.json({ success: true, data });
+    ok(
+      res,
+      repo.listar().map(({ id }) => {
+        const e = repo.buscarPorId(id);
+        return {
+          id: e.id,
+          nome: e.nome,
+          categoria: e.categoria,
+          percentualSinal: e.percentualSinal ?? REGRAS.sinal.percentualPadrao,
+          promocaoEntrada: e.promocaoEntrada ?? null,
+          excecoesEntrada: e.excecoesEntrada ?? null,
+          categoriasLinear: e.tabelaLinear ? e.tabelaLinear.map((l) => l.categoriaPreco) : [],
+        };
+      }),
+    );
   });
 
-  r.post('/simulacoes', validar(esquemaPlanoPadrao), (req, res) => {
-    res.json({ success: true, data: simularPlanoPadrao(req.validado, repoEmpreendimentos, { cacheRegras }) });
+  r.post('/simulacoes', validar(v.esquemaPlanoPadrao), (req, res) => {
+    ok(res, simularPlanoPadrao(req.validado, repo, { cacheRegras }));
   });
 
-  r.post('/simulacoes/linear', validar(esquemaModeloLinear), (req, res) => {
-    res.json({ success: true, data: simularModeloLinear(req.validado, repoEmpreendimentos) });
+  r.post('/simulacoes/linear', validar(v.esquemaModeloLinear), (req, res) => {
+    ok(res, simularModeloLinear(req.validado, repo));
   });
 
-  r.get('/datas/dia-util', validar(esquemaDiaUtil, 'query'), (req, res) => {
+  r.get('/datas/dia-util', validar(v.esquemaDiaUtil, 'query'), (req, res) => {
     const base = datas.parseISO(req.validado.data);
     const resultado = datas.diasUteisApos(base, req.validado.dias);
-    res.json({
-      success: true,
-      data: {
-        data: req.validado.data,
-        dias: req.validado.dias,
-        diaUtil: datas.toISO(resultado),
-        dataEhDiaUtil: datas.isDiaUtil(base),
-      },
+    ok(res, {
+      data: req.validado.data,
+      dias: req.validado.dias,
+      diaUtil: datas.toISO(resultado),
+      dataEhDiaUtil: datas.isDiaUtil(base),
     });
   });
+
+  // --- Fichas em PDF (geradas no servidor a partir da simulação) ---------------
+  if (fichas) {
+    const enviarPDF = (res, bytes, nome) =>
+      res.type('application/pdf').set('Content-Disposition', `attachment; filename="${nome}"`).send(Buffer.from(bytes));
+
+    r.post(
+      '/fichas/negociacao',
+      validar(v.esquemaPlanoPadrao),
+      assincrono(async (req, res) => {
+        const sim = simularPlanoPadrao(req.validado, repo, { cacheRegras });
+        enviarPDF(res, await fichas.negociacao(sim), `ficha-negociacao-${sim.empreendimento.id}.pdf`);
+      }),
+    );
+    r.post(
+      '/fichas/negociacao/linear',
+      validar(v.esquemaModeloLinear),
+      assincrono(async (req, res) => {
+        const sim = simularModeloLinear(req.validado, repo);
+        enviarPDF(res, await fichas.negociacao(sim), `ficha-negociacao-${sim.empreendimento.id}.pdf`);
+      }),
+    );
+    r.post(
+      '/fichas/cadastro',
+      validar(v.esquemaFichaCadastro),
+      assincrono(async (req, res) => {
+        enviarPDF(res, await fichas.cadastro(req.validado), 'ficha-cadastro.pdf');
+      }),
+    );
+  }
+
+  // --- Autenticação ------------------------------------------------------------
+  r.post('/auth/login', validar(v.esquemaLogin), (req, res) => {
+    ok(res, auth.login(req.validado.email, req.validado.senha));
+  });
+  r.get('/auth/eu', auth.exigir(), (req, res) => ok(res, req.usuario));
+
+  // --- Administração: tabelas versionadas e shadow mode -----------------------
+  r.get('/tabelas', admin, (req, res) => {
+    ok(res, { versoes: repo.listarVersoes(req.query.empreendimentoId), colunas: COLUNAS, exemplos: EXEMPLO_CSV });
+  });
+
+  r.post('/tabelas/importar', admin, validar(v.esquemaImportacao), (req, res) => {
+    const { empreendimentoId, tipo, vigenteDesde, csv } = req.validado;
+    const { dados, linhas } = converterCSV(tipo, csv);
+    const { dados: _omit, ...registro } = repo.salvarTabela({
+      empreendimentoId,
+      tipo,
+      vigenteDesde,
+      dados,
+      origem: `csv:${req.usuario.email}`,
+    });
+    sincronizarCache(); // R23: regras novas valem a partir da próxima simulação
+    ok(res, { ...registro, linhas }, 201);
+  });
+
+  r.post('/shadow/comparar', admin, validar(v.esquemaShadow), (req, res) => ok(res, shadow.executar(req.validado)));
+  r.get('/shadow/estatisticas', admin, (_req, res) => ok(res, shadow.estatisticas()));
 
   return r;
 }

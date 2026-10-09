@@ -53,8 +53,9 @@ function resumirCronograma(cronograma) {
   };
 }
 
-function buscarEmpreendimentoAtivo(repo, id) {
-  const emp = repo.buscarPorId(id);
+function buscarEmpreendimentoAtivo(repo, id, dataVenda) {
+  // Tabelas vigentes na data da venda (temporalidade), não na data de hoje.
+  const emp = repo.buscarPorId(id, { data: dataVenda });
   if (!emp || !emp.ativo) {
     throw new ErroDeNegocio('EMPREENDIMENTO_NAO_ENCONTRADO', `Empreendimento não encontrado ou inativo: ${id}`);
   }
@@ -69,7 +70,7 @@ const mesBR = (chave) => chave.split('-').reverse().join('/');
  * @param {{cacheRegras?: object}} [opcoes] cache de regras (R23), opcional
  */
 function simularPlanoPadrao(entrada, repo, { cacheRegras = null } = {}) {
-  const emp = buscarEmpreendimentoAtivo(repo, entrada.empreendimentoId);
+  const emp = buscarEmpreendimentoAtivo(repo, entrada.empreendimentoId, entrada.dataVenda);
   const dataVenda = datas.parseISO(entrada.dataVenda); // R05
   const cotas = entrada.quantidadeCotas;
   const valorUnidadeCent = paraCentavos(entrada.valorUnidade);
@@ -234,7 +235,7 @@ function simularPlanoPadrao(entrada, repo, { cacheRegras = null } = {}) {
 }
 
 function simularModeloLinear(entrada, repo) {
-  const emp = buscarEmpreendimentoAtivo(repo, entrada.empreendimentoId);
+  const emp = buscarEmpreendimentoAtivo(repo, entrada.empreendimentoId, entrada.dataVenda);
   const dataVenda = datas.parseISO(entrada.dataVenda);
   const ml = r.modeloLinear(emp, entrada.categoriaPreco, entrada.quantidadeCotas, dataVenda); // R24
   const alertas = [];
