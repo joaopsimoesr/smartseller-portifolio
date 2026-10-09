@@ -1,0 +1,19 @@
+{
+  "name": "smartseller-portifolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulador de planos de pagamento para vendas de cotas — versão de portfólio com regras fictícias",
+  "workspaces": ["api", "web"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w api\" \"npm run dev -w web\"",
+    "test": "npm test -w api",
+    "build": "npm run build -w web",
+    "start": "npm start -w api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

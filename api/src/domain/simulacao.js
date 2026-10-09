@@ -11,7 +11,7 @@
 const { REGRAS } = require('../config/regras');
 const { ErroDeNegocio } = require('./erros');
 const datas = require('./datas');
-const { paraCentavos, paraReais, dividirEmParcelas } = require('./dinheiro');
+const { paraCentavos, paraReais, dividirEmParcelas, formatarBRL } = require('./dinheiro');
 const calc = require('./calculos');
 
 const ORDEM_ETAPAS = [
@@ -108,7 +108,7 @@ function simularPlanoPadrao(entrada, repo) {
   if (restanteCent < 0) {
     throw new ErroDeNegocio(
       'ENTRADA_EXCEDIDA',
-      `1ª + 2ª entrada (R$ ${paraReais(p1Cent + p2Cent)}) excedem a entrada total (R$ ${paraReais(ent.totalCentavos)})`,
+      `1ª + 2ª entrada (${formatarBRL(p1Cent + p2Cent)}) excedem a entrada total (${formatarBRL(ent.totalCentavos)})`,
     );
   }
 
@@ -117,7 +117,7 @@ function simularPlanoPadrao(entrada, repo) {
     if (!entrada.entradaRestante) {
       throw new ErroDeNegocio(
         'ENTRADA_RESTANTE_OBRIGATORIA',
-        `Faltam R$ ${paraReais(restanteCent)} de entrada: informe o parcelamento da entrada restante`,
+        `Faltam ${formatarBRL(restanteCent)} de entrada: informe o parcelamento da entrada restante`,
       );
     }
     const inicio = datas.parseISO(entrada.entradaRestante.dataInicio);

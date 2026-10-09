@@ -21,4 +21,11 @@ function dividirEmParcelas(totalCentavos, n) {
   return Array.from({ length: n }, (_, i) => base + (i < resto ? 1 : 0));
 }
 
-module.exports = { paraCentavos, paraReais, dividirEmParcelas };
+const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+/** Formata centavos como moeda brasileira, para mensagens ao usuário. */
+function formatarBRL(centavos) {
+  return BRL.format(centavos / 100).replace(/\u00a0/g, ' ');
+}
+
+module.exports = { paraCentavos, paraReais, dividirEmParcelas, formatarBRL };
