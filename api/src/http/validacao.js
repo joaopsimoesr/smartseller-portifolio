@@ -5,6 +5,7 @@
 
 const Joi = require('joi');
 const { REGRAS } = require('../config/regras');
+const { cpfValido, formatarCPF } = require('../domain/documentos');
 
 const dataISO = Joi.string()
   .pattern(/^\d{4}-\d{2}-\d{2}$/)
@@ -60,6 +61,32 @@ const esquemaDiaUtil = Joi.object({
   dias: Joi.number().integer().min(1).max(30).default(1),
 });
 
+const cpf = Joi.string()
+  .custom((valor, helpers) => (cpfValido(valor) ? formatarCPF(valor) : helpers.error('cpf.invalido')))
+  .messages({ 'cpf.invalido': 'CPF inválido (dígitos verificadores não conferem)' });
+
+const textoCurto = (max = 120) => Joi.string().trim().max(max).allow('');
+
+const esquemaFichaCadastro = Joi.object({
+  cliente: Joi.object({
+    nome: Joi.string().trim().min(3).max(120).required(),
+    cpf: cpf.required(),
+    nascimento: dataISO,
+    email: Joi.string().email({ tlds: false }).max(120).allow(''),
+    telefone: textoCurto(30),
+    endereco: textoCurto(),
+    cidade: textoCurto(80),
+    uf: Joi.string().uppercase().length(2).allow(''),
+    cep: Joi.string().pattern(/^\d{5}-?\d{3}$/).allow(''),
+  }).required(),
+  negociacao: Joi.object({
+    empreendimento: textoCurto(),
+    cotas: Joi.number().integer().min(REGRAS.limites.cotasMin).max(REGRAS.limites.cotasMax),
+    valorUnidade: dinheiro,
+    dataVenda: dataISO,
+  }).default({}),
+});
+
 const esquemaLogin = Joi.object({
   email: Joi.string().max(200).required(),
   senha: Joi.string().max(200).required(),
@@ -88,4 +115,5 @@ module.exports = {
   esquemaLogin,
   esquemaImportacao,
   esquemaShadow,
+  esquemaFichaCadastro,
 };

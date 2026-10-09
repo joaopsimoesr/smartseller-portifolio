@@ -12,6 +12,7 @@ const { criarRepositorioEmpreendimentos } = require('./repositories/empreendimen
 const { criarCacheDeRegras } = require('./repositories/cache-regras');
 const { criarAuth } = require('./services/auth');
 const { criarShadow } = require('./services/shadow');
+const { criarFichas } = require('./pdf');
 
 /** Fábrica do app: dependências injetáveis facilitam teste e troca de persistência. */
 function criarApp({
@@ -19,7 +20,7 @@ function criarApp({
   cacheRegras = criarCacheDeRegras(),
   auth = criarAuth(),
   shadow = criarShadow(),
-  fichas = null,
+  fichas = criarFichas(),
 } = {}) {
   // R23: o cache guarda as regras vigentes de cada empreendimento ativo.
   cacheRegras.sincronizar(repoEmpreendimentos.listar().map((e) => repoEmpreendimentos.buscarPorId(e.id)));
