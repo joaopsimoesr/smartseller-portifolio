@@ -1,0 +1,17 @@
+// Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+// Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "noUnusedLocals": true
+  },
+  "include": ["src", "vite.config.ts"]
+}

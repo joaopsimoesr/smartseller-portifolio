@@ -1,0 +1,19 @@
+{
+  "name": "smartseller-versao-local",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SmartSeller — versão de portfólio consolidada das versões locais (regras e dados fictícios)",
+  "author": "João Pedro Simões Rodrigues",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "workspaces": ["api", "web"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w api\" \"npm run dev -w web\"",
+    "test": "npm test -w api",
+    "build": "npm run build -w web",
+    "start": "npm start -w api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
