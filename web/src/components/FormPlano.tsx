@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 import { useMemo, useState } from 'react';
 import type { Empreendimento, MeioPagamento, Regras } from '../api';
 import { hojeISO, moeda, somarMesesISO } from '../formato';

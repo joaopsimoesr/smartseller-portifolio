@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 import type { Etapa, Parcela } from './api';
 
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });

@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "description": "API do simulador de planos de pagamento (regras fictícias)",
+  "author": "João Pedro Simões Rodrigues",
+  "license": "SEE LICENSE IN LICENSE",
   "main": "src/server.js",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "test": "jest"
+    "dev": "node --watch-path=src src/server.js",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -19,14 +22,6 @@
     "joi": "^17.13.3"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "supertest": "^7.0.0"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/server.js"
-    ]
+    "supertest": "7.3.0"
   }
 }

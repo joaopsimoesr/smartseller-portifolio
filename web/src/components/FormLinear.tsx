@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 import { useState } from 'react';
 import type { Empreendimento } from '../api';
 import { hojeISO } from '../formato';

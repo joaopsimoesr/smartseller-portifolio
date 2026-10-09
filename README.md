@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados. Uso sujeito aos termos do arquivo LICENSE na raiz do repositório. -->
+
 # SmartSeller — simulador de planos de pagamento
 
 > **Versão de portfólio.** Empreendimentos, valores, percentuais, prazos e
@@ -36,11 +38,13 @@ tem números mágicos.
 ## Como rodar
 
 Requisitos: Node 20 ou superior. Não há banco, Docker nem variáveis de ambiente.
+O `npm install` termina com **0 vulnerabilidades**: os testes usam o runner nativo do
+Node, e a única dependência de teste é o Supertest.
 
 ```bash
 npm install
 npm run dev        # API em :3001 e interface em http://localhost:5173
-npm test           # 42 testes (unidade + HTTP)
+npm test           # 42 testes (node:test + Supertest)
 npm run build      # build de produção do frontend
 ```
 
@@ -78,7 +82,7 @@ api/
   src/domain/                 funções puras: datas, dinheiro, cálculos, simulação
   src/repositories/           acesso a dados (em memória, mesma interface de um banco)
   src/http/                   Express: rotas, validação (Joi), mapeamento de erros
-  tests/                      Jest + Supertest
+  tests/                      node:test (nativo) + Supertest
 web/
   src/                        React + TypeScript + Tailwind (Vite)
 ```

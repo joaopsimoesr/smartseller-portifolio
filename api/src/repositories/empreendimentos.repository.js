@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 /**
  * Repositório em memória, carregado de um JSON de dados fictícios.
  *
@@ -7,7 +12,7 @@
  * que o projeto rode com um único `npm install`.
  */
 
-const seed = require('../data/empreendimentos.json');
+const { empreendimentos: seed } = require('../data/empreendimentos.json');
 
 function criarRepositorioEmpreendimentos(dados = seed) {
   const porId = new Map(dados.map((e) => [e.id, Object.freeze({ ...e })]));

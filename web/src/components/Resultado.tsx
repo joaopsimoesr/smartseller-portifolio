@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 import { useState } from 'react';
 import type { Alerta, Etapa, Simulacao } from '../api';
 import { baixarArquivo, COR_ETAPA, cronogramaCSV, dataBR, moeda, ROTULO_ETAPA } from '../formato';
