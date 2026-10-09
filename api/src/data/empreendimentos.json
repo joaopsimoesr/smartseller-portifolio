@@ -1,0 +1,62 @@
+[
+  {
+    "id": "residencial-alfa",
+    "nome": "Residencial Alfa",
+    "categoria": "PADRAO",
+    "ativo": true
+  },
+  {
+    "id": "resort-beta",
+    "nome": "Resort Beta",
+    "categoria": "PREMIUM",
+    "percentualSinal": 6,
+    "ativo": true
+  },
+  {
+    "id": "vila-gama",
+    "nome": "Vila Gama",
+    "categoria": "PADRAO",
+    "promocaoEntrada": {
+      "descricao": "Entrada promocional de lançamento",
+      "valorPorCota": 1800,
+      "inicio": "2026-01-01",
+      "fim": "2026-12-31"
+    },
+    "ativo": true
+  },
+  {
+    "id": "parque-delta",
+    "nome": "Parque Delta",
+    "categoria": "PADRAO",
+    "tabelaLinear": [
+      {
+        "categoriaPreco": "Bronze",
+        "valorCota": 30000,
+        "entrada": { "parcelas": 10, "valorPorCota": 1500 },
+        "sinal": { "parcelas": 5, "valorPorCota": 1200 },
+        "saldo": { "parcelas": 70 }
+      },
+      {
+        "categoriaPreco": "Prata",
+        "valorCota": 42000,
+        "entrada": { "parcelas": 10, "valorPorCota": 2100 },
+        "sinal": { "parcelas": 6, "valorPorCota": 1680 },
+        "saldo": { "parcelas": 72 }
+      },
+      {
+        "categoriaPreco": "Ouro",
+        "valorCota": 58000,
+        "entrada": { "parcelas": 12, "valorPorCota": 2900 },
+        "sinal": { "parcelas": 6, "valorPorCota": 2320 },
+        "saldo": { "parcelas": 84 }
+      }
+    ],
+    "ativo": true
+  },
+  {
+    "id": "mirante-epsilon",
+    "nome": "Mirante Epsilon",
+    "categoria": "PREMIUM",
+    "ativo": false
+  }
+]
