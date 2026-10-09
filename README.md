@@ -1,12 +1,67 @@
-# SmartSeller — simulador de planos de pagamento
+# SmartSeller — de norma a código
 
-> **Versão de portfólio.** Empreendimentos, valores, percentuais, prazos e
-> alçadas são **fictícios**. A arquitetura e as técnicas vêm de um MVP real
-> (2025) usado por vendedores para montar propostas de venda de cotas
-> imobiliárias. As regras comerciais originais foram trocadas por uma
-> simulação.
+> Simulador de planos de pagamento em que **cada regra de negócio e cada
+> alçada de aprovação é uma norma escrita, traduzida em código testável**.
+
+**Versão de portfólio.** Empreendimentos, valores, percentuais, prazos e
+alçadas são **fictícios**. A arquitetura e as técnicas vêm de um MVP que
+construí em 2024–2025, como cofundador da KTB Smart Solutions, para
+vendedores que montam propostas de venda de cotas imobiliárias. As regras
+comerciais originais foram trocadas por uma simulação.
 
 ![Plano padrão](docs/img/plano-padrao.png)
+
+## O desafio que me interessou
+
+O difícil neste projeto não foi a interface nem a API. Foi **traduzir normas
+internas em lógica de programação**. Uma norma não é uma lista de passos. Ela
+tem estrutura própria:
+
+- **condição**: "se o sinal começa antes do fim da entrada restante…";
+- **exceção**: "…salvo na tabela de exceções do empreendimento";
+- **hierarquia**: a tabela de exceções prevalece sobre o valor por categoria, e
+  o percentual do empreendimento prevalece sobre o padrão;
+- **competência**: acima de certo prazo, a aprovação sobe de gerência para
+  comitê.
+
+Esse texto só vira código correto quando se entende a norma, e não apenas a
+sintaxe. Por isso o projeto trata a regra como cidadã de primeira classe.
+
+| Norma (simulada) | Estrutura jurídica | Onde vive no código |
+|---|---|---|
+| Entrada por cota, por categoria, com promoção por vigência | regra geral, regra especial, vigência temporal | `api/src/config/regras.js` + `domain/calculos` |
+| Sinal = % da unidade, sobrescrevível por empreendimento | norma geral e norma especial (a especial prevalece) | idem |
+| Data da 1ª parcela conforme o meio de pagamento | tipificação: cada meio tem uma consequência | idem |
+| Dia útil, com feriados nacionais **móveis** (Páscoa) | contagem de prazo em dias úteis | `domain/datas` |
+| Sinal não pode começar antes do fim da entrada restante | vedação, com saída sugerida | alerta bloqueante com data sugerida |
+| Meses sem parcela entre entrada e entrada restante | lacuna que deve ser sinalizada, não escondida | alerta `MESES_SEM_PAGAMENTO` |
+| Distância venda → sinal acima de 120 dias: gerência; acima de 180: comitê | alçada, ou seja, competência por faixa | alerta com nível de aprovação |
+| **Modelo linear**: valores e prazos vêm de tabela por categoria | regime alternativo, com sua própria regra de cálculo | `simularModeloLinear` |
+
+Três escolhas de projeto vêm dessa mentalidade:
+
+1. **A política é dado, não código.** Todas as regras ficam num arquivo
+   declarativo, [`api/src/config/regras.js`](api/src/config/regras.js). O motor
+   de cálculo não tem números mágicos. Alterar uma alçada é alterar uma linha
+   versionada, e a versão das regras vai em toda resposta (`regrasVersao`).
+2. **Rastreabilidade.** Cada violação tem um `codigo` estável
+   (`ENTRADA_EXCEDIDA` etc.), e toda resposta informa a versão das regras. Na
+   `versao-local/`, cada simulação também lista as `regrasAplicadas`. Dá para
+   auditar por que o sistema decidiu o que decidiu.
+3. **Cada regra tem teste.** Uma regra sem teste é uma interpretação sem
+   fundamento. A suíte confere, por exemplo, que a soma do cronograma é igual
+   ao valor da unidade **ao centavo**.
+
+## Duas versões neste repositório
+
+| Pasta | O que é |
+|---|---|
+| Raiz (`api/`, `web/`) | Versão enxuta: motor de cálculo, API, interface, testes e CI. |
+| [`versao-local/`](versao-local/) | Versão consolidada: as **24 regras documentadas uma a uma** em [`REGRAS.md`](versao-local/REGRAS.md), assistente de venda em 7 etapas, login com perfis, importação de tabelas de preço por CSV com versão e vigência, *shadow mode* (nova implementação × legada) e fichas em PDF. Veja o [README](versao-local/README.md) e as [funcionalidades](versao-local/FUNCIONALIDADES.md). |
+
+Para a leitura de "norma → código", comece pelo
+[`REGRAS.md`](versao-local/REGRAS.md): cada regra tem entradas, saídas,
+valores fictícios e a função que a implementa.
 
 ## O que faz
 
@@ -18,21 +73,6 @@ parcelas** e os **alertas de política comercial**:
 1ª entrada ─► 2ª entrada (opcional) ─► entrada restante ─► sinal ─► saldo
 ```
 
-| Regra | Exemplo na simulação |
-|---|---|
-| Entrada por cota, por categoria, com promoção por vigência | Padrão R$ 2.500 · Premium R$ 3.200 · promoção R$ 1.800 em 2026 |
-| Sinal como % da unidade, sobrescrevível por empreendimento | 4% padrão · 6% no Resort Beta |
-| Data da 1ª parcela depende do meio de pagamento | PIX/TED/dinheiro no dia · débito em D+2 **úteis** · crédito/boleto no mês seguinte |
-| Dia útil considera feriados nacionais **móveis** (Páscoa) | Carnaval, Sexta-feira Santa, Corpus Christi |
-| Meses sem parcela entre a entrada e a entrada restante | alerta `MESES_SEM_PAGAMENTO` |
-| Sinal não pode começar antes do fim da entrada restante | alerta bloqueante com data sugerida |
-| Alçada de aprovação pela distância entre venda e sinal | > 120 dias: gerência · > 180 dias: comitê |
-| **Modelo linear**: valores e prazos vêm de uma tabela por categoria de preço | Parque Delta · Bronze/Prata/Ouro |
-
-Todas as regras ficam num único arquivo declarativo,
-[`api/src/config/regras.js`](api/src/config/regras.js). O motor de cálculo não
-tem números mágicos.
-
 ## Como rodar
 
 Requisitos: Node 20 ou superior. Não há banco, Docker nem variáveis de ambiente.
@@ -40,7 +80,7 @@ Requisitos: Node 20 ou superior. Não há banco, Docker nem variáveis de ambien
 ```bash
 npm install
 npm run dev        # API em :3001 e interface em http://localhost:5173
-npm test           # 42 testes (unidade + HTTP)
+npm test           # unidade + HTTP
 npm run build      # build de produção do frontend
 ```
 
@@ -104,18 +144,20 @@ Mais contexto em [`docs/DECISOES.md`](docs/DECISOES.md).
 ## Status e limitações
 
 - ✅ Motor de cálculo, API, interface, exportação CSV e testes automatizados (CI).
-- ⚠️ Persistência em memória. O MVP original usava MongoDB, com importação de
-  tabelas de preço e histórico de versões. Aqui foi simplificado para o
-  projeto rodar com um único `npm install`.
-- ⚠️ Sem autenticação. O original tinha login JWT e perfis. Foi removido porque
-  não agrega a uma demo pública.
-- ⚠️ Sem geração das fichas em PDF e sem o *shadow mode*, que comparava o
-  cálculo legado do frontend com o novo backend durante a migração. Ambos
-  existiam no MVP e foram deixados de fora desta versão.
+- ✅ [`versao-local/`](versao-local/): 24 regras documentadas, login com perfis,
+  importação de tabelas por CSV, *shadow mode* e fichas em PDF.
+- ⚠️ Persistência em memória. O MVP original usava MongoDB. Aqui foi simplificado
+  para o projeto rodar com um único `npm install`.
+- ⚠️ Os valores são fictícios. Nada aqui representa a política comercial de
+  nenhuma empresa ou cliente.
+- ⚠️ A versão da raiz não tem autenticação nem PDF. Esses recursos estão em
+  `versao-local/`.
 - ⚠️ Feriados apenas nacionais. Feriados estaduais e municipais não são
   considerados.
 
 ## Autoria e licença
 
-Projeto concebido e desenvolvido por **João Pedro Simões Rodrigues**.
+Projeto concebido e desenvolvido por **João Pedro Simões Rodrigues**
+([github.com/joaopsimoesr](https://github.com/joaopsimoesr)), bacharel em
+Direito e desenvolvedor, com foco em automação e dados para o Direito.
 Código disponibilizado para avaliação de portfólio. Veja a [LICENSE](LICENSE).
