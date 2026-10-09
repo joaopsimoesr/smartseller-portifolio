@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 /**
  * Regras de negócio SIMULADAS.
  *
@@ -19,7 +24,7 @@ const REGRAS = Object.freeze({
     parcelasMax: 84,
   }),
 
-  /** Entrada: valor fixo por cota, por categoria de empreendimento. */
+  /** R10 — entrada: valor fixo por cota, por categoria de empreendimento. */
   entrada: Object.freeze({
     valorPorCota: Object.freeze({
       PADRAO: 2500,
@@ -27,13 +32,13 @@ const REGRAS = Object.freeze({
     }),
   }),
 
-  /** Sinal: percentual sobre o valor da unidade (empreendimento pode sobrescrever). */
+  /** R11/R12 — sinal: percentual sobre o valor da unidade (empreendimento pode sobrescrever). */
   sinal: Object.freeze({
     percentualPadrao: 4,
   }),
 
   /**
-   * Meios de pagamento da entrada.
+   * R13 — meios de pagamento da entrada.
    * - MESMO_DIA:       primeira parcela na data-base.
    * - DIAS_UTEIS_APOS: primeira parcela N dias úteis após a data-base
    *                    (único meio que respeita fim de semana e feriado).
@@ -58,20 +63,37 @@ const REGRAS = Object.freeze({
     BOLETO: { rotulo: 'Boleto', regra: 'MESES_APOS', meses: 1, parcelasMax: 24 },
   }),
 
-  /** Alçada de aprovação conforme a distância (em dias) entre venda e início do sinal. */
+  /** R21 — alçada de aprovação conforme a distância (em dias) entre venda e início do sinal. */
   autorizacaoSinal: Object.freeze([
     { acimaDeDias: 180, nivel: 'COMITE', rotulo: 'Comitê comercial' },
     { acimaDeDias: 120, nivel: 'GERENCIA', rotulo: 'Gerência' },
   ]),
 
-  /** Modelo linear: tabela define quantidades; estes são os padrões de fallback. */
+  /** R24 — modelo linear: a tabela define quantidades; estes são os padrões de fallback. */
   modeloLinear: Object.freeze({
     diaVencimentoSinal: 10,
+    meioPagamentoEntrada: 'BOLETO',
     parcelasPadrao: Object.freeze({ entrada: 10, sinal: 5, saldo: 72 }),
   }),
 
+  /** R07/R08 — limite de dias corridos ao procurar um dia útil. */
+  diaUtil: Object.freeze({
+    maxDias: 10,
+  }),
+
+  /** R23 — validade do cache de regras por empreendimento. */
+  cacheRegras: Object.freeze({
+    validadeMs: 10 * 60 * 1000,
+  }),
+
+  /** Shadow mode — tolerâncias ao comparar duas implementações do motor. */
+  shadow: Object.freeze({
+    toleranciaCentavos: 1,
+    toleranciaDias: 0,
+  }),
+
   /**
-   * Feriados considerados para "dia útil" (nacionais fixos + móveis derivados da Páscoa).
+   * R09 — feriados considerados para "dia útil" (nacionais fixos + móveis derivados da Páscoa).
    * Formato MM-DD para fixos.
    */
   feriados: Object.freeze({

@@ -1,62 +1,117 @@
-[
-  {
-    "id": "residencial-alfa",
-    "nome": "Residencial Alfa",
-    "categoria": "PADRAO",
-    "ativo": true
-  },
-  {
-    "id": "resort-beta",
-    "nome": "Resort Beta",
-    "categoria": "PREMIUM",
-    "percentualSinal": 6,
-    "ativo": true
-  },
-  {
-    "id": "vila-gama",
-    "nome": "Vila Gama",
-    "categoria": "PADRAO",
-    "promocaoEntrada": {
-      "descricao": "Entrada promocional de lançamento",
-      "valorPorCota": 1800,
-      "inicio": "2026-01-01",
-      "fim": "2026-12-31"
+{
+  "_copyright": "Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados. Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.",
+  "_aviso": "Dados fictícios para demonstração.",
+  "empreendimentos": [
+    {
+      "id": "residencial-alfa",
+      "nome": "Residencial Alfa",
+      "categoria": "PADRAO",
+      "ativo": true
     },
-    "ativo": true
-  },
-  {
-    "id": "parque-delta",
-    "nome": "Parque Delta",
-    "categoria": "PADRAO",
-    "tabelaLinear": [
-      {
-        "categoriaPreco": "Bronze",
-        "valorCota": 30000,
-        "entrada": { "parcelas": 10, "valorPorCota": 1500 },
-        "sinal": { "parcelas": 5, "valorPorCota": 1200 },
-        "saldo": { "parcelas": 70 }
+    {
+      "id": "resort-beta",
+      "nome": "Resort Beta",
+      "categoria": "PREMIUM",
+      "percentualSinal": 6,
+      "ativo": true
+    },
+    {
+      "id": "vila-gama",
+      "nome": "Vila Gama",
+      "categoria": "PADRAO",
+      "promocaoEntrada": {
+        "descricao": "Entrada promocional de lançamento",
+        "valorPorCota": 1800,
+        "inicio": "2026-01-01",
+        "fim": "2026-12-31"
       },
-      {
-        "categoriaPreco": "Prata",
-        "valorCota": 42000,
-        "entrada": { "parcelas": 10, "valorPorCota": 2100 },
-        "sinal": { "parcelas": 6, "valorPorCota": 1680 },
-        "saldo": { "parcelas": 72 }
-      },
-      {
-        "categoriaPreco": "Ouro",
-        "valorCota": 58000,
-        "entrada": { "parcelas": 12, "valorPorCota": 2900 },
-        "sinal": { "parcelas": 6, "valorPorCota": 2320 },
-        "saldo": { "parcelas": 84 }
+      "ativo": true
+    },
+    {
+      "id": "parque-delta",
+      "nome": "Parque Delta",
+      "categoria": "PADRAO",
+      "tabelaLinear": [
+        {
+          "categoriaPreco": "Bronze",
+          "valorCota": 30000,
+          "entrada": {
+            "parcelas": 10,
+            "valorPorCota": 1500
+          },
+          "sinal": {
+            "parcelas": 5,
+            "valorPorCota": 1200
+          },
+          "saldo": {
+            "parcelas": 70,
+            "valorParcelaPorCota": 390.0
+          }
+        },
+        {
+          "categoriaPreco": "Prata",
+          "valorCota": 42000,
+          "entrada": {
+            "parcelas": 10,
+            "valorPorCota": 2100
+          },
+          "sinal": {
+            "parcelas": 6,
+            "valorPorCota": 1680
+          },
+          "saldo": {
+            "parcelas": 72,
+            "valorParcelaPorCota": 530.83
+          }
+        },
+        {
+          "categoriaPreco": "Ouro",
+          "valorCota": 58000,
+          "entrada": {
+            "parcelas": 12,
+            "valorPorCota": 2900
+          },
+          "sinal": {
+            "parcelas": 6,
+            "valorPorCota": 2320
+          },
+          "saldo": {
+            "parcelas": 84,
+            "valorParcelaPorCota": 628.33
+          }
+        },
+        {
+          "categoriaPreco": "Esmeralda",
+          "valorCota": 66000,
+          "entrada": {
+            "parcelas": 0,
+            "valorPorCota": 3300
+          },
+          "sinal": {
+            "parcelas": 0,
+            "valorPorCota": 2640
+          },
+          "saldo": {
+            "parcelas": 0,
+            "valorParcelaPorCota": 830
+          }
+        }
+      ],
+      "ativo": true,
+      "excecoesEntrada": {
+        "descricao": "Tabela de exceções de entrada (fictícia)",
+        "valoresPorQuantidade": {
+          "1": 1250,
+          "2": 2500
+        },
+        "valorCotaAdicional": 1250
       }
-    ],
-    "ativo": true
-  },
-  {
-    "id": "mirante-epsilon",
-    "nome": "Mirante Epsilon",
-    "categoria": "PREMIUM",
-    "ativo": false
-  }
-]
+    },
+    {
+      "id": "mirante-epsilon",
+      "nome": "Mirante Epsilon",
+      "categoria": "PREMIUM",
+      "ativo": false
+    }
+  ]
+}

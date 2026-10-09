@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 /**
  * Dinheiro em centavos inteiros. Divisões em parcelas distribuem o resto
  * nas primeiras parcelas, para que a soma das parcelas seja SEMPRE igual

@@ -1,7 +1,13 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 const { ErroDeNegocio } = require('../domain/erros');
 
 const STATUS_POR_CODIGO = {
   EMPREENDIMENTO_NAO_ENCONTRADO: 404,
+  CREDENCIAIS_INVALIDAS: 401,
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -26,6 +32,12 @@ function tratadorDeErros(err, _req, res, _next) {
     return res.status(400).json({
       success: false,
       error: { codigo: 'DATA_INVALIDA', mensagem: err.message },
+    });
+  }
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      error: { codigo: 'CORPO_GRANDE_DEMAIS', mensagem: 'Requisição grande demais' },
     });
   }
   if (err.type === 'entity.parse.failed') {

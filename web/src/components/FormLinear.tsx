@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2025-2026 João Pedro Simões Rodrigues. Todos os direitos reservados.
+ * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
+ */
+
 import { useState } from 'react';
 import type { Empreendimento } from '../api';
 import { hojeISO } from '../formato';
@@ -17,7 +22,7 @@ export default function FormLinear({ empreendimentos, carregando, onSimular }: P
   const [dataVenda, setDataVenda] = useState(hojeISO());
 
   if (comTabela.length === 0) {
-    return <p className="text-sm text-slate-500">Nenhum empreendimento possui tabela linear.</p>;
+    return <p className="text-sm text-suave">Nenhum empreendimento possui tabela linear.</p>;
   }
 
   return (
@@ -28,7 +33,7 @@ export default function FormLinear({ empreendimentos, carregando, onSimular }: P
         onSimular({ empreendimentoId: empId, categoriaPreco: categoria, quantidadeCotas: cotas, dataVenda });
       }}
     >
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-suave">
         No modelo linear, valores e quantidade de parcelas vêm da tabela do empreendimento: o vendedor escolhe apenas a
         categoria de preço.
       </p>
@@ -47,7 +52,7 @@ export default function FormLinear({ empreendimentos, carregando, onSimular }: P
           ))}
         </select>
       </label>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
         <label className="block">
           <span className="rotulo">Categoria</span>
           <select className="campo" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
@@ -63,7 +68,7 @@ export default function FormLinear({ empreendimentos, carregando, onSimular }: P
           <input className="campo" type="date" value={dataVenda} onChange={(e) => setDataVenda(e.target.value)} />
         </label>
       </div>
-      <button className="botao w-full" disabled={carregando}>
+      <button className="btn-solido w-full" disabled={carregando}>
         {carregando ? 'Calculando…' : 'Simular modelo linear'}
       </button>
     </form>
