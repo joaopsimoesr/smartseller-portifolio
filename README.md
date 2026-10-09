@@ -96,6 +96,33 @@ ser ambíguas ([`calculos.test.js`](api/tests/calculos.test.js)):
 Quando a política mudar, muda o dado. Quando a interpretação mudar, um teste de
 fronteira quebra antes de qualquer proposta sair errada.
 
+### A pirâmide normativa como arquitetura
+
+O guia da conversão foi a **pirâmide normativa de Kelsen**: uma norma só é
+válida se encontra fundamento na norma superior, e nenhuma camada inferior pode
+contrariar a de cima. As regras do SmartSeller foram organizadas da mesma forma,
+e cada degrau tem um lugar próprio no código:
+
+| Degrau | No negócio | No código | Pode ser alterado por… |
+|---|---|---|---|
+| 1 | **Invariantes**: o que vale para qualquer venda | O domínio garante: a soma das parcelas é igual ao valor da unidade, as datas existem, nenhum pagamento é anterior à venda | ninguém; violar gera erro (`422`) |
+| 2 | **Política comercial geral** | [`regras.js`](api/src/config/regras.js): valores por categoria, percentual de sinal, meios de pagamento, alçadas | a diretoria, editando o dado |
+| 3 | **Norma específica** do empreendimento | `percentualSinal` e `promocaoEntrada` no cadastro do empreendimento | o gestor do empreendimento, dentro dos limites do degrau 2 |
+| 4 | **Ato concreto**: a proposta do vendedor | O payload de `POST /api/simulacoes` | o vendedor, dentro de tudo o que está acima |
+
+Os critérios clássicos de solução de antinomias também aparecem no motor:
+
+- **Hierarquia** (*lex superior*): nenhum dado de empreendimento ou de proposta
+  quebra uma invariante: o motor recusa a proposta com um código de erro estável.
+- **Especialidade** (*lex specialis*): o percentual de sinal do empreendimento
+  prevalece sobre o geral (`empreendimento.percentualSinal ?? percentualPadrao`).
+- **Temporalidade** (*lex posterior* e vigência): a promoção de entrada só
+  vale entre `inicio` e `fim`, e cada simulação registra a versão das regras
+  aplicadas (`regrasVersao`).
+- **Competência**: o que excede a autonomia do vendedor não é proibido. É
+  remetido à instância competente, e as alçadas de gerência e comitê
+  funcionam como delegação de competência.
+
 ## Como rodar
 
 Requisitos: Node 20 ou superior. Não há banco, Docker nem variáveis de ambiente.
