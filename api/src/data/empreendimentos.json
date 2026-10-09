@@ -44,7 +44,8 @@
             "valorPorCota": 1200
           },
           "saldo": {
-            "parcelas": 70
+            "parcelas": 70,
+            "valorParcelaPorCota": 390.0
           }
         },
         {
@@ -59,7 +60,8 @@
             "valorPorCota": 1680
           },
           "saldo": {
-            "parcelas": 72
+            "parcelas": 72,
+            "valorParcelaPorCota": 530.83
           }
         },
         {
@@ -74,11 +76,36 @@
             "valorPorCota": 2320
           },
           "saldo": {
-            "parcelas": 84
+            "parcelas": 84,
+            "valorParcelaPorCota": 628.33
+          }
+        },
+        {
+          "categoriaPreco": "Esmeralda",
+          "valorCota": 66000,
+          "entrada": {
+            "parcelas": 0,
+            "valorPorCota": 3300
+          },
+          "sinal": {
+            "parcelas": 0,
+            "valorPorCota": 2640
+          },
+          "saldo": {
+            "parcelas": 0,
+            "valorParcelaPorCota": 830
           }
         }
       ],
-      "ativo": true
+      "ativo": true,
+      "excecoesEntrada": {
+        "descricao": "Tabela de exceções de entrada (fictícia)",
+        "valoresPorQuantidade": {
+          "1": 1250,
+          "2": 2500
+        },
+        "valorCotaAdicional": 1250
+      }
     },
     {
       "id": "mirante-epsilon",

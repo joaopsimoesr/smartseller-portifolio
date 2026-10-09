@@ -42,8 +42,10 @@ tem números mágicos.
 A parte mais desafiadora do projeto não foi técnica. Foi **traduzir a política
 comercial e as normas internas, escritas para pessoas, em regras executáveis**,
 sem perder o sentido nem criar comportamento que a norma não previa. O MVP
-original implementava 24 regras de cálculo. Esta versão reúne um subconjunto
-representativo, com valores fictícios, mas preserva o método.
+original implementava 24 regras de cálculo, e esta versão implementa todas,
+com valores fictícios: veja o catálogo completo em [`REGRAS.md`](REGRAS.md),
+com o degrau normativo de cada regra e as diferenças deliberadas em relação ao
+original.
 
 Cada regra percorre o mesmo caminho: **norma → interpretação → dado → função → teste**.
 
@@ -132,7 +134,7 @@ Node, e a única dependência de teste é o Supertest.
 ```bash
 npm install
 npm run dev        # API em :3001 e interface em http://localhost:5173
-npm test           # 42 testes (node:test + Supertest)
+npm test           # testes das 24 regras + API (node:test + Supertest)
 npm run build      # build de produção do frontend
 ```
 

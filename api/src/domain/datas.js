@@ -4,17 +4,37 @@
  */
 
 /**
- * Utilitários de data — tudo em UTC e com datas "civis" (sem hora).
+ * Regras de calendário (R01–R09) — tudo em UTC e com datas "civis" (sem hora).
  *
  * A API troca datas como strings ISO `YYYY-MM-DD`. Internamente usamos
  * `Date` em UTC 00:00 para que fuso horário do servidor nunca desloque um
- * vencimento de dia (bug clássico de `getDate()` vs `getUTCDate()`).
+ * vencimento de dia (bug clássico de `getDate()` vs `getUTCDate()`, presente
+ * no MVP original e corrigido aqui).
+ *
+ * Numeração das regras: ver REGRAS.md na raiz do repositório.
  */
 
 const { REGRAS } = require('../config/regras');
+const { ErroDeNegocio } = require('./erros');
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+const DIA_MS = 86_400_000;
 
+function utc(ano, mesIndex0, dia) {
+  return new Date(Date.UTC(ano, mesIndex0, dia));
+}
+
+function ultimoDiaDoMes(ano, mesIndex0) {
+  return utc(ano, mesIndex0 + 1, 0).getUTCDate();
+}
+
+function exigirData(date, rotulo = 'Data') {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    throw new TypeError(`${rotulo} inválida`);
+  }
+}
+
+/** R05 — lê `AAAA-MM-DD` como meia-noite UTC; rejeita formato errado e data inexistente. */
 function parseISO(str) {
   if (typeof str !== 'string' || !ISO_RE.test(str)) {
     throw new TypeError(`Data inválida (esperado YYYY-MM-DD): ${str}`);
@@ -30,38 +50,52 @@ function toISO(date) {
   return date.toISOString().slice(0, 10);
 }
 
-function utc(ano, mesIndex0, dia) {
-  return new Date(Date.UTC(ano, mesIndex0, dia));
-}
-
-function ultimoDiaDoMes(ano, mesIndex0) {
-  return utc(ano, mesIndex0 + 1, 0).getUTCDate();
-}
-
-/**
- * Soma meses preservando o dia; se o dia não existir no mês de destino,
- * usa o último dia (31/01 + 1 mês = 28/02 ou 29/02).
- * `diaPreferido` permite ancorar uma série inteira no dia original,
- * evitando o "arrasto" 31/01 → 28/02 → 28/03.
- */
-function addMeses(date, meses, diaPreferido = date.getUTCDate()) {
-  const totalMeses = date.getUTCFullYear() * 12 + date.getUTCMonth() + meses;
-  const ano = Math.floor(totalMeses / 12);
-  const mes = totalMeses % 12;
-  return utc(ano, mes, Math.min(diaPreferido, ultimoDiaDoMes(ano, mes)));
-}
-
-/** DD/MM/AAAA, para mensagens ao usuário. */
+/** R04 — DD/MM/AAAA, para mensagens e documentos. */
 function toBR(date) {
+  exigirData(date);
   return toISO(date).split('-').reverse().join('/');
 }
 
+/**
+ * R01 — soma meses preservando o dia; se o dia não existir no mês de destino,
+ * usa o último dia (31/01 + 1 mês = 28/02 ou 29/02). Aceita meses negativos.
+ * `diaPreferido` ancora uma série inteira no dia original, evitando o
+ * "arrasto" 31/01 → 28/02 → 28/03 do encadeamento ingênuo.
+ */
+function addMeses(date, meses, diaPreferido = date.getUTCDate()) {
+  exigirData(date);
+  if (!Number.isInteger(meses)) throw new TypeError('Data inválida: número de meses deve ser inteiro');
+  const totalMeses = date.getUTCFullYear() * 12 + date.getUTCMonth() + meses;
+  const ano = Math.floor(totalMeses / 12);
+  const mes = ((totalMeses % 12) + 12) % 12;
+  return utc(ano, mes, Math.min(diaPreferido, ultimoDiaDoMes(ano, mes)));
+}
+
+/** R06 — fixa o dia do mês; se o dia não existir no mês, usa o último dia. */
+function fixarDiaDoMes(date, dia) {
+  exigirData(date);
+  if (!Number.isInteger(dia) || dia < 1 || dia > 31) {
+    throw new ErroDeNegocio('DIA_INVALIDO', 'Dia do mês deve estar entre 1 e 31');
+  }
+  const ano = date.getUTCFullYear();
+  const mes = date.getUTCMonth();
+  return utc(ano, mes, Math.min(dia, ultimoDiaDoMes(ano, mes)));
+}
+
+/** R03 — data da última parcela de uma série mensal (a data inicial é a 1ª). */
+function ultimaParcela(inicio, parcelas) {
+  if (!Number.isInteger(parcelas) || parcelas < 1) {
+    throw new ErroDeNegocio('PARCELAS_INVALIDAS', 'Número de parcelas deve ser inteiro positivo');
+  }
+  return addMeses(inicio, parcelas - 1);
+}
+
 function addDias(date, dias) {
-  return new Date(date.getTime() + dias * 86_400_000);
+  return new Date(date.getTime() + dias * DIA_MS);
 }
 
 function diffDias(fim, inicio) {
-  return Math.round((fim.getTime() - inicio.getTime()) / 86_400_000);
+  return Math.round((fim.getTime() - inicio.getTime()) / DIA_MS);
 }
 
 /** Domingo de Páscoa (algoritmo de Meeus/Jones/Butcher). */
@@ -103,7 +137,12 @@ function feriadosDoAno(ano) {
   return cacheFeriados.get(ano);
 }
 
+/**
+ * R09 — feriado nacional? Fixos da configuração + móveis derivados da Páscoa.
+ * (O original considerava só os fixos; a lista caducava todo ano.)
+ */
 function isFeriado(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return false;
   return feriadosDoAno(date.getUTCFullYear()).has(toISO(date));
 }
 
@@ -116,14 +155,26 @@ function isDiaUtil(date) {
   return !isFimDeSemana(date) && !isFeriado(date);
 }
 
-/** N-ésimo dia útil estritamente APÓS a data (n >= 1). */
+/**
+ * R07 (inclusivo) e R08 (estrito) — próximo dia útil.
+ * Inclusivo devolve a própria data se ela já for útil; estrito sempre avança.
+ * Um limite de dias corridos impede laço infinito com calendário mal configurado.
+ */
+function proximoDiaUtil(date, { inclusivo = false, maxDias = REGRAS.diaUtil.maxDias } = {}) {
+  exigirData(date);
+  if (inclusivo && isDiaUtil(date)) return date;
+  let atual = date;
+  for (let i = 0; i < maxDias; i += 1) {
+    atual = addDias(atual, 1);
+    if (isDiaUtil(atual)) return atual;
+  }
+  throw new ErroDeNegocio('SEM_DIA_UTIL', `Nenhum dia útil em ${maxDias} dias a partir de ${toBR(date)}`);
+}
+
+/** N-ésimo dia útil estritamente APÓS a data (n >= 1): R08 aplicada n vezes. */
 function diasUteisApos(date, n = 1) {
   let atual = date;
-  let restantes = n;
-  while (restantes > 0) {
-    atual = addDias(atual, 1);
-    if (isDiaUtil(atual)) restantes -= 1;
-  }
+  for (let i = 0; i < n; i += 1) atual = proximoDiaUtil(atual);
   return atual;
 }
 
@@ -136,18 +187,42 @@ function chaveMes(date) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
+/**
+ * R02 — meses sem pagamento: entre o último pagamento anterior a `inicio` e o
+ * mês de `inicio`, quais meses ficam sem nenhuma parcela. Retorna chaves `AAAA-MM`.
+ */
+function mesesSemPagamento(datasAnteriores, inicio) {
+  exigirData(inicio, 'Data de início');
+  const anteriores = datasAnteriores.filter((d) => d instanceof Date && d < inicio);
+  if (anteriores.length === 0) return [];
+
+  const comPagamento = new Set(anteriores.map(chaveMes));
+  const ultima = new Date(Math.max(...anteriores.map((d) => d.getTime())));
+  const alvo = chaveMes(inicio);
+
+  const pulados = [];
+  for (let m = addMeses(ultima, 1, 1); chaveMes(m) < alvo; m = addMeses(m, 1, 1)) {
+    if (!comPagamento.has(chaveMes(m))) pulados.push(chaveMes(m));
+  }
+  return pulados;
+}
+
 module.exports = {
   parseISO,
   toISO,
   toBR,
   addMeses,
+  fixarDiaDoMes,
+  ultimaParcela,
   addDias,
   diffDias,
   pascoa,
   isFeriado,
   isFimDeSemana,
   isDiaUtil,
+  proximoDiaUtil,
   diasUteisApos,
   serieMensal,
   chaveMes,
+  mesesSemPagamento,
 };

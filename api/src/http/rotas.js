@@ -25,7 +25,7 @@ function validar(esquema, origem = 'body') {
   };
 }
 
-function criarRotas({ repoEmpreendimentos }) {
+function criarRotas({ repoEmpreendimentos, cacheRegras }) {
   const r = express.Router();
 
   r.get('/health', (_req, res) => {
@@ -43,13 +43,14 @@ function criarRotas({ repoEmpreendimentos }) {
       categoria: e.categoria,
       percentualSinal: e.percentualSinal ?? REGRAS.sinal.percentualPadrao,
       promocaoEntrada: e.promocaoEntrada ?? null,
+      excecoesEntrada: e.excecoesEntrada ?? null,
       categoriasLinear: e.tabelaLinear ? e.tabelaLinear.map((l) => l.categoriaPreco) : [],
     }));
     res.json({ success: true, data });
   });
 
   r.post('/simulacoes', validar(esquemaPlanoPadrao), (req, res) => {
-    res.json({ success: true, data: simularPlanoPadrao(req.validado, repoEmpreendimentos) });
+    res.json({ success: true, data: simularPlanoPadrao(req.validado, repoEmpreendimentos, { cacheRegras }) });
   });
 
   r.post('/simulacoes/linear', validar(esquemaModeloLinear), (req, res) => {

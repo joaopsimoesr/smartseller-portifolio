@@ -55,7 +55,7 @@ describe('POST /api/simulacoes', () => {
     assert.equal(resumo.entrada.total, 5000);
     assert.equal(resumo.entrada.primeira, 1000);
     assert.equal(resumo.entrada.restante, 4000);
-    assert.deepEqual(resumo.sinal, { total: 3200, percentual: 4 });
+    assert.deepEqual(resumo.sinal, { total: 3200, percentual: 4, origemPercentual: 'CACHE' });
     assert.equal(resumo.saldo.total, 71800);
     assert.equal(somaCentavos(cronograma), 8000000);
     assert.equal(resumo.totalPlano, 80000);
@@ -98,6 +98,21 @@ describe('POST /api/simulacoes', () => {
     assert.equal(r.body.data.resumo.entrada.restante, 2400);
     assert.equal(r.body.data.resumo.sinal.percentual, 6);
     assert.equal(somaCentavos(r.body.data.cronograma), 8000000);
+  });
+
+  test('exceções de entrada do empreendimento prevalecem (R10)', async () => {
+    const body = { ...planoBase(), empreendimentoId: 'parque-delta', quantidadeCotas: 3 };
+    const r = await request(app).post('/api/simulacoes').send(body).expect(200);
+    assert.equal(r.body.data.resumo.entrada.regra, 'EXCECAO');
+    assert.equal(r.body.data.resumo.entrada.total, 3750);
+    assert.equal(somaCentavos(r.body.data.cronograma), 8000000);
+  });
+
+  test('a resposta lista as regras aplicadas', async () => {
+    const r = await request(app).post('/api/simulacoes').send(planoBase()).expect(200);
+    const aplicadas = r.body.data.regrasAplicadas;
+    ['R05', 'R10', 'R11', 'R13', 'R15', 'R17', 'R19', 'R20', 'R21', 'R22'].forEach((x) => assert.ok(aplicadas.includes(x), x));
+    assert.equal(r.body.data.resumo.sinal.origemPercentual, 'CACHE');
   });
 
   test('entrada excedida → 422 com valores em reais', async () => {
@@ -154,11 +169,29 @@ describe('POST /api/simulacoes/linear', () => {
     assert.equal(sinal[0].vencimento, '2027-02-10'); // mês após a 10ª parcela de entrada (jan/27), dia 10
   });
 
+  test('quantidades padrão e divergência da tabela geram alertas', async () => {
+    const r = await request(app)
+      .post('/api/simulacoes/linear')
+      .send({ empreendimentoId: 'parque-delta', categoriaPreco: 'Esmeralda', quantidadeCotas: 1, dataVenda: '2026-03-13' })
+      .expect(200);
+    const codigos = r.body.data.alertas.map((a) => a.codigo);
+    assert.deepEqual(codigos, ['PARCELAS_PADRAO', 'DIVERGENCIA_TABELA_LINEAR']);
+    assert.equal(somaCentavos(r.body.data.cronograma), 6600000);
+  });
+
+  test('arredondamento da tabela não gera alerta de divergência', async () => {
+    const r = await request(app)
+      .post('/api/simulacoes/linear')
+      .send({ empreendimentoId: 'parque-delta', categoriaPreco: 'Prata', quantidadeCotas: 3, dataVenda: '2026-03-13' })
+      .expect(200);
+    assert.deepEqual(r.body.data.alertas, []);
+  });
+
   test('categoria inexistente lista as disponíveis', async () => {
     const r = await request(app)
       .post('/api/simulacoes/linear')
       .send({ empreendimentoId: 'parque-delta', categoriaPreco: 'Diamante', quantidadeCotas: 1, dataVenda: '2026-03-13' })
       .expect(422);
-    assert.deepEqual(r.body.error.detalhes.disponiveis, ['Bronze', 'Prata', 'Ouro']);
+    assert.deepEqual(r.body.error.detalhes.disponiveis, ['Bronze', 'Prata', 'Ouro', 'Esmeralda']);
   });
 });
