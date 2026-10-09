@@ -137,7 +137,7 @@ function simularPlanoPadrao(entrada, repo) {
       alertas.push({
         codigo: 'MESES_SEM_PAGAMENTO',
         severidade: 'aviso',
-        mensagem: `Há ${pulados.length} mês(es) sem parcela antes da entrada restante: ${pulados.join(', ')}`,
+        mensagem: `Há ${pulados.length} mês(es) sem parcela antes da entrada restante: ${pulados.map((m) => m.split('-').reverse().join('/')).join(', ')}`,
         meses: pulados,
       });
     }
@@ -163,7 +163,7 @@ function simularPlanoPadrao(entrada, repo) {
     alertas.push({
       codigo: 'CONFLITO_SINAL_ENTRADA',
       severidade: 'bloqueante',
-      mensagem: `O sinal começa antes do fim da entrada restante (${datas.toISO(conflito.ultimaParcelaRestante)}). Início sugerido: ${datas.toISO(conflito.inicioSugerido)}`,
+      mensagem: `O sinal começa antes do fim da entrada restante (${datas.toBR(conflito.ultimaParcelaRestante)}). Início sugerido: ${datas.toBR(conflito.inicioSugerido)}`,
       inicioSugerido: datas.toISO(conflito.inicioSugerido),
     });
   }

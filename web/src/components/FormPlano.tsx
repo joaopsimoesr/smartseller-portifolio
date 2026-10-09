@@ -83,7 +83,7 @@ export default function FormPlano({ regras, empreendimentos, carregando, onSimul
 
   return (
     <form onSubmit={enviar} className="space-y-6">
-      <section className="grid grid-cols-2 gap-4">
+      <section className="grid grid-cols-2 items-end gap-4">
         <div className="col-span-2">
           <Campo rotulo="Empreendimento">
             <select className="campo" value={f.empreendimentoId} onChange={txt('empreendimentoId')}>
@@ -95,7 +95,7 @@ export default function FormPlano({ regras, empreendimentos, carregando, onSimul
             </select>
           </Campo>
           {emp?.promocaoEntrada && (
-            <p className="mt-1 text-xs text-emerald-700">
+            <p className="mt-1 text-xs text-verde-700">
               {emp.promocaoEntrada.descricao}: {moeda(emp.promocaoEntrada.valorPorCota)}/cota até{' '}
               {emp.promocaoEntrada.fim.split('-').reverse().join('/')}
             </p>
@@ -110,16 +110,16 @@ export default function FormPlano({ regras, empreendimentos, carregando, onSimul
         <Campo rotulo="Data da venda">
           <input className="campo" type="date" value={f.dataVenda} onChange={txt('dataVenda')} />
         </Campo>
-        <div className="flex items-end">
-          <p className="text-sm text-slate-600">
-            Entrada estimada: <strong>{moeda(entradaEstimada)}</strong>
+        <div className="flex items-end pb-1">
+          <p className="text-sm text-suave">
+            Entrada estimada: <strong className="tabular font-medium text-royal-900">{moeda(entradaEstimada)}</strong>
           </p>
         </div>
       </section>
 
-      <fieldset className="space-y-3 rounded-lg border border-slate-200 p-4">
-        <legend className="px-1 text-sm font-semibold">1ª entrada</legend>
-        <div className="grid grid-cols-3 gap-3">
+      <fieldset className="grupo">
+        <legend>1ª entrada</legend>
+        <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
           <Campo rotulo="Meio">
             <select className="campo" value={f.p1Meio} onChange={(e) => { const m = e.target.value as MeioPagamento; setF((s) => ({ ...s, p1Meio: m, p1Parcelas: Math.min(s.p1Parcelas, maxParcelas(m)) })); }}>
               {MEIOS.map((m) => <option key={m} value={m}>{regras.meiosPagamento[m].rotulo}</option>)}
@@ -134,15 +134,15 @@ export default function FormPlano({ regras, empreendimentos, carregando, onSimul
         </div>
       </fieldset>
 
-      <fieldset className="space-y-3 rounded-lg border border-slate-200 p-4">
-        <legend className="px-1 text-sm font-semibold">
-          <label className="inline-flex items-center gap-2">
-            <input type="checkbox" checked={f.usarSegunda} onChange={(e) => set('usarSegunda', e.target.checked)} />
+      <fieldset className="grupo">
+        <legend>
+          <label className="inline-flex items-center gap-2 font-sans text-[0.95rem]">
+            <input type="checkbox" className="size-4 accent-royal-700" checked={f.usarSegunda} onChange={(e) => set('usarSegunda', e.target.checked)} />
             2ª entrada (opcional)
           </label>
         </legend>
         {f.usarSegunda && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
             <Campo rotulo="Meio">
               <select className="campo" value={f.p2Meio} onChange={(e) => { const m = e.target.value as MeioPagamento; setF((s) => ({ ...s, p2Meio: m, p2Parcelas: Math.min(s.p2Parcelas, maxParcelas(m)) })); }}>
                 {MEIOS.map((m) => <option key={m} value={m}>{regras.meiosPagamento[m].rotulo}</option>)}
@@ -158,8 +158,8 @@ export default function FormPlano({ regras, empreendimentos, carregando, onSimul
         )}
       </fieldset>
 
-      <fieldset className="grid grid-cols-2 gap-3 rounded-lg border border-slate-200 p-4">
-        <legend className="px-1 text-sm font-semibold">Entrada restante</legend>
+      <fieldset className="grupo grid grid-cols-1 items-end gap-3 space-y-0 sm:grid-cols-2">
+        <legend>Entrada restante</legend>
         <Campo rotulo="Parcelas">
           <input className="campo" type="number" min={1} max={regras.limites.parcelasMax} value={f.restanteParcelas} onChange={num('restanteParcelas')} />
         </Campo>
@@ -168,8 +168,8 @@ export default function FormPlano({ regras, empreendimentos, carregando, onSimul
         </Campo>
       </fieldset>
 
-      <fieldset className="grid grid-cols-2 gap-3 rounded-lg border border-slate-200 p-4">
-        <legend className="px-1 text-sm font-semibold">Sinal e saldo</legend>
+      <fieldset className="grupo grid grid-cols-1 items-end gap-3 space-y-0 sm:grid-cols-2">
+        <legend>Sinal e saldo</legend>
         <Campo rotulo="Parcelas do sinal">
           <input className="campo" type="number" min={1} max={regras.limites.parcelasMax} value={f.sinalParcelas} onChange={num('sinalParcelas')} />
         </Campo>
@@ -181,7 +181,7 @@ export default function FormPlano({ regras, empreendimentos, carregando, onSimul
         </Campo>
       </fieldset>
 
-      <button className="botao w-full" disabled={carregando || !emp}>
+      <button className="btn-solido w-full" disabled={carregando || !emp}>
         {carregando ? 'Calculando…' : 'Simular plano'}
       </button>
     </form>

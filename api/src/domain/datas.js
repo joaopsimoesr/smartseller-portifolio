@@ -51,6 +51,11 @@ function addMeses(date, meses, diaPreferido = date.getUTCDate()) {
   return utc(ano, mes, Math.min(diaPreferido, ultimoDiaDoMes(ano, mes)));
 }
 
+/** DD/MM/AAAA, para mensagens ao usuário. */
+function toBR(date) {
+  return toISO(date).split('-').reverse().join('/');
+}
+
 function addDias(date, dias) {
   return new Date(date.getTime() + dias * 86_400_000);
 }
@@ -134,6 +139,7 @@ function chaveMes(date) {
 module.exports = {
   parseISO,
   toISO,
+  toBR,
   addMeses,
   addDias,
   diffDias,

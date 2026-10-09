@@ -10,6 +10,8 @@
 
 ![Plano padrão](docs/img/plano-padrao.png)
 
+<p align="center"><img src="docs/img/mobile.png" alt="Versão para celular" width="260"></p>
+
 ## O que faz
 
 O vendedor informa a negociação: empreendimento, cotas, valor da unidade e
@@ -34,6 +36,65 @@ parcelas** e os **alertas de política comercial**:
 Todas as regras ficam num único arquivo declarativo,
 [`api/src/config/regras.js`](api/src/config/regras.js). O motor de cálculo não
 tem números mágicos.
+
+## Da norma ao código
+
+A parte mais desafiadora do projeto não foi técnica. Foi **traduzir a política
+comercial e as normas internas, escritas para pessoas, em regras executáveis**,
+sem perder o sentido nem criar comportamento que a norma não previa. O MVP
+original implementava 24 regras de cálculo. Esta versão reúne um subconjunto
+representativo, com valores fictícios, mas preserva o método.
+
+Cada regra percorre o mesmo caminho: **norma → interpretação → dado → função → teste**.
+
+**1. A norma**, como um gestor a escreveria:
+
+> *"O início do sinal pode ser postergado. Se começar mais de 120 dias após a
+> venda, depende de aprovação da gerência; acima de 180 dias, do comitê comercial."*
+
+**2. A interpretação.** O texto deixa perguntas que o código não pode deixar em
+aberto:
+
+| Dúvida | Decisão registrada |
+|---|---|
+| "Mais de 120 dias" inclui o 120º dia? | Não: a aprovação começa no 121º dia (`>`, não `>=`) |
+| E exatamente 180 dias? | Gerência: "acima de 180" significa a partir do 181º dia |
+| Dias corridos ou úteis? | Corridos: a norma não fala em dias úteis, e onde fala (débito) isso está explícito |
+| A falta de aprovação impede a proposta? | Não: o sistema **alerta** e o vendedor decide. Bloquear seria criar uma regra que a norma não criou |
+
+**3. O dado.** A política vira configuração, não código
+([`regras.js`](api/src/config/regras.js)):
+
+```js
+autorizacaoSinal: [
+  { acimaDeDias: 180, nivel: 'COMITE',   rotulo: 'Comitê comercial' },
+  { acimaDeDias: 120, nivel: 'GERENCIA', rotulo: 'Gerência' },
+],
+```
+
+**4. A função**, pura e sem números mágicos
+([`calculos.js`](api/src/domain/calculos.js)):
+
+```js
+function alcadaAprovacaoSinal(dataVenda, inicioSinal) {
+  const dias = datas.diffDias(inicioSinal, dataVenda);
+  const faixa = REGRAS.autorizacaoSinal.find((f) => dias > f.acimaDeDias);
+  return { dias, exigeAprovacao: Boolean(faixa), nivel: faixa?.nivel ?? null }; // resumido
+}
+```
+
+**5. O teste**, que fixa a interpretação nas fronteiras, onde as normas costumam
+ser ambíguas ([`calculos.test.js`](api/tests/calculos.test.js)):
+
+```js
+['2026-04-30', null],        // 119 dias
+['2026-05-02', 'GERENCIA'],  // 121 dias
+['2026-06-30', 'GERENCIA'],  // 180 dias (limite)
+['2026-07-01', 'COMITE'],    // 181 dias
+```
+
+Quando a política mudar, muda o dado. Quando a interpretação mudar, um teste de
+fronteira quebra antes de qualquer proposta sair errada.
 
 ## Como rodar
 
@@ -105,6 +166,26 @@ Decisões técnicas que valem destaque:
 
 Mais contexto em [`docs/DECISOES.md`](docs/DECISOES.md).
 
+## Design
+
+A interface segue a linguagem do Design System Leginova (superfícies em papel,
+tipografia editorial, cards brancos com borda fina, marcador octogonal), com a
+paleta adaptada para **azul royal**, na tinta e na ação, e **verde**, no dado e
+na confirmação:
+
+- **Tipografia.** EB Garamond nos títulos, Inter na interface, JetBrains Mono
+  em rótulos, parcelas e selos.
+- **Cor nunca carrega significado sozinha.** Etapas e alertas usam um ponto
+  colorido sempre acompanhado de texto, e as cores das etapas diferem em
+  luminosidade, não só em matiz.
+- **Contraste.** Todo texto fica acima de 4,5:1 (WCAG AA). Os tons mais claros
+  de azul e verde são usados só em marcas gráficas (≥ 3:1).
+- **Sem requisições a terceiros.** As fontes são servidas pelo próprio app.
+  Foco visível em todos os controles, link para pular ao conteúdo e
+  `prefers-reduced-motion` respeitado.
+
+Os tokens estão em [`web/src/index.css`](web/src/index.css).
+
 ## Status e limitações
 
 - ✅ Motor de cálculo, API, interface, exportação CSV e testes automatizados (CI).
@@ -123,3 +204,7 @@ Mais contexto em [`docs/DECISOES.md`](docs/DECISOES.md).
 
 Projeto concebido e desenvolvido por **João Pedro Simões Rodrigues**.
 Código disponibilizado para avaliação de portfólio. Veja a [LICENSE](LICENSE).
+
+As fontes em `web/public/fonts/` (EB Garamond, Inter e JetBrains Mono) são de
+seus respectivos autores e são distribuídas sob a SIL Open Font License 1.1.
+As licenças estão em [`web/public/fonts/licencas/`](web/public/fonts/licencas/).

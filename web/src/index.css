@@ -3,11 +3,195 @@
  * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
  */
 
+/*
+ * Linguagem visual do Design System Leginova (papel, tipografia editorial,
+ * cards brancos com hairline, marcador octogonal), com a paleta adaptada:
+ * navy → azul royal (tinta e ação) · ouro/teal → verde (dado e hierarquia).
+ * Fontes servidas pelo próprio app (SIL OFL 1.1, ver public/fonts/licencas).
+ */
+
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'EB Garamond';
+  src: url('/fonts/eb-garamond-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@theme {
+  --font-display: 'EB Garamond', Garamond, Georgia, serif;
+  --font-sans: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Superfícies */
+  --color-paper-50: #faf8f3; /* fundo da página */
+  --color-paper-100: #eef1f7; /* faixas, cabeçalho de tabela, abas */
+
+  /* Azul royal — tinta, autoridade e ação */
+  --color-royal-950: #0b1a4a; /* 16,7:1 sobre white */
+  --color-royal-900: #13246b; /* títulos e valores: 13,3:1 sobre paper-50 */
+  --color-royal-700: #2342b0; /* botão sólido, links, foco: 8,5:1 (white sobre ele) */
+  --color-royal-500: #4c6fe0; /* só marcas gráficas (pontos): 4,5:1 sobre white */
+  --color-royal-100: #e7ecfb; /* realce de aba/linha */
+
+  /* Verde — dado, confirmação e hierarquia */
+  --color-verde-800: #0f5a3f; /* texto verde forte: 7,7:1 sobre paper-50 */
+  --color-verde-700: #17734f; /* texto verde: 5,5:1 sobre paper-50 */
+  --color-verde-600: #1e8a5e; /* só marcas gráficas: 4,1:1 sobre paper-50 */
+  --color-verde-100: #e4f2ea;
+
+  /* Texto e linhas */
+  --color-tinta: #171b26; /* corpo: 16,2:1 */
+  --color-suave: #5b6072; /* secundário: 5,9:1 */
+  --color-controle: #868c9e; /* borda de campo: 3,4:1 sobre white */
+
+  /* Funcionais (sempre acompanhados de texto) */
+  --color-aviso-700: #8a5a00;
+  --color-aviso-600: #b7791f;
+  --color-risco-700: #a8321f;
+
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 4px rgba(9, 13, 24, 0.08);
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 5rem;
+  }
+  body {
+    @apply bg-paper-50 font-sans text-tinta antialiased;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-royal-700);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
 @layer components {
-  .campo { @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200; }
-  .rotulo { @apply mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500; }
-  .cartao { @apply rounded-xl border border-slate-200 bg-white p-5 shadow-sm; }
-  .botao { @apply rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50; }
+  /* Cabeçalho fixo: único uso de blur */
+  .topo {
+    @apply sticky top-0 z-10 border-b;
+    background: rgba(250, 248, 243, 0.92);
+    backdrop-filter: blur(10px);
+    border-color: rgba(23, 27, 38, 0.12);
+  }
+
+  .hairline {
+    border-color: rgba(23, 27, 38, 0.12);
+  }
+
+  .eyebrow {
+    @apply font-mono text-suave uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+  }
+
+  .cartao {
+    @apply rounded-lg border bg-white p-6 shadow-card;
+    border-color: rgba(23, 27, 38, 0.12);
+  }
+
+  .rotulo {
+    @apply mb-1.5 block font-mono text-suave uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+  }
+
+  .th {
+    @apply px-4 py-2.5 font-mono font-medium text-suave uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+  }
+
+  .campo {
+    @apply w-full rounded-md border border-controle bg-white px-3 py-2 text-[0.95rem] text-tinta;
+    transition: border-color 0.2s;
+  }
+  .campo:hover {
+    @apply border-royal-900;
+  }
+  .campo:focus-visible {
+    outline-offset: 1px;
+  }
+
+  .grupo {
+    @apply space-y-3 rounded-lg border p-4;
+    border-color: rgba(23, 27, 38, 0.12);
+  }
+  .grupo > legend {
+    @apply px-1 font-display text-[1.1rem] text-royal-900;
+  }
+
+  .btn-solido {
+    @apply rounded-md bg-royal-700 px-6 py-3 text-[0.97rem] font-medium text-white;
+    transition: filter 0.2s;
+  }
+  .btn-solido:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+  .btn-solido:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  .link {
+    @apply text-royal-700 underline underline-offset-[0.18em];
+  }
+  .link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Selo: pílula neutra com ponto colorido; o texto sempre acompanha a cor */
+  .selo {
+    @apply inline-flex items-center gap-1.5 rounded-full border bg-paper-50 px-2.5 py-0.5 font-mono text-tinta;
+    font-size: 0.72rem;
+    border-color: rgba(23, 27, 38, 0.12);
+  }
+  .selo::before {
+    content: '';
+    @apply size-2 rounded-full;
+    background: var(--ponto, var(--color-suave));
+  }
+
+  /* Marcador octogonal (miolo do ipê, do sistema Leginova) */
+  .octogono {
+    @apply inline-block size-2.5 shrink-0;
+    background: var(--ponto, var(--color-verde-600));
+    clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
 }

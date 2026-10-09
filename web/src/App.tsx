@@ -3,13 +3,18 @@
  * Uso sujeito aos termos do arquivo LICENSE na raiz do repositório.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { api, ErroApi, type Empreendimento, type Regras, type Simulacao } from './api';
 import FormLinear from './components/FormLinear';
 import FormPlano from './components/FormPlano';
 import Resultado from './components/Resultado';
 
 type Aba = 'padrao' | 'linear';
+
+const ABAS: { id: Aba; rotulo: string }[] = [
+  { id: 'padrao', rotulo: 'Plano padrão' },
+  { id: 'linear', rotulo: 'Modelo linear' },
+];
 
 export default function App() {
   const [regras, setRegras] = useState<Regras | null>(null);
@@ -42,58 +47,105 @@ export default function App() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">
-          SmartSeller <span className="font-normal text-slate-400">· simulador de planos de pagamento</span>
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Versão de portfólio — empreendimentos, valores e regras comerciais são <strong>fictícios</strong>.
-        </p>
+    <>
+      <a href="#conteudo" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-20 focus:rounded-sm focus:bg-white focus:px-3 focus:py-2">
+        Ir para o conteúdo
+      </a>
+
+      <header className="topo">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5 sm:px-7">
+          <p className="flex items-center gap-2.5">
+            <span className="octogono size-3.5" />
+            <span className="font-display text-[1.35rem] leading-none text-royal-900">SmartSeller</span>
+          </p>
+          <span className="selo" style={{ '--ponto': 'var(--color-aviso-600)' } as CSSProperties}>
+            Regras fictícias
+          </span>
+        </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
-        <aside className="cartao">
-          <nav className="mb-5 flex gap-1 rounded-lg bg-slate-100 p-1 text-sm">
-            {(['padrao', 'linear'] as const).map((a) => (
-              <button
-                key={a}
-                type="button"
-                onClick={() => { setAba(a); setSim(null); setErro(null); }}
-                className={`flex-1 rounded-md px-3 py-1.5 font-medium ${aba === a ? 'bg-white shadow-sm' : 'text-slate-500'}`}
-              >
-                {a === 'padrao' ? 'Plano padrão' : 'Modelo linear'}
-              </button>
-            ))}
-          </nav>
+      <main id="conteudo" className="mx-auto max-w-7xl px-5 pb-16 pt-12 sm:px-7">
+        <section className="mb-10 max-w-[64ch]">
+          <p className="eyebrow mb-3">Simulador de planos de pagamento</p>
+          <h1 className="font-display text-[clamp(1.9rem,4.4vw,2.6rem)] leading-[1.15] text-royal-900">
+            Da entrada ao saldo, o plano inteiro antes da assinatura.
+          </h1>
+          <p className="mt-4 text-[1.0625rem] leading-[1.7] text-suave">
+            O vendedor descreve a negociação e recebe o cronograma de parcelas com os alertas da política comercial.
+            Esta é uma versão de portfólio: empreendimentos, valores e regras são fictícios.
+          </p>
+        </section>
 
-          {!regras ? (
-            <p className="text-sm text-slate-500">{erro ? '' : 'Carregando regras…'}</p>
-          ) : aba === 'padrao' ? (
-            <FormPlano regras={regras} empreendimentos={empreendimentos} carregando={carregando} onSimular={(p) => simular(() => api.simular(p))} />
-          ) : (
-            <FormLinear empreendimentos={empreendimentos} carregando={carregando} onSimular={(p) => simular(() => api.simularLinear(p))} />
-          )}
-        </aside>
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,27rem)_minmax(0,1fr)]">
+          <aside className="cartao min-w-0">
+            <nav className="mb-6 grid grid-cols-2 gap-1 rounded-md bg-paper-100 p-1" aria-label="Modelo de venda">
+              {ABAS.map(({ id, rotulo }) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={aba === id}
+                  onClick={() => {
+                    setAba(id);
+                    setSim(null);
+                    setErro(null);
+                  }}
+                  className={`rounded-sm px-3 py-2 text-[0.92rem] font-medium transition-colors ${
+                    aba === id ? 'bg-white text-royal-900 shadow-card' : 'text-suave hover:text-royal-900'
+                  }`}
+                >
+                  {rotulo}
+                </button>
+              ))}
+            </nav>
 
-        <main className="cartao min-h-[20rem]">
-          {erro && (
-            <div className="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-900">
-              <p className="font-medium">{erro.message}</p>
-              {erro.detalhes.length > 0 && (
-                <ul className="mt-1 list-inside list-disc">
-                  {erro.detalhes.map((d) => <li key={d.campo}>{d.mensagem}</li>)}
-                </ul>
-              )}
-            </div>
-          )}
-          {sim ? (
-            <Resultado sim={sim} />
-          ) : (
-            !erro && <p className="text-sm text-slate-500">Preencha a negociação e clique em simular para ver o cronograma.</p>
-          )}
-        </main>
-      </div>
-    </div>
+            {!regras ? (
+              <p className="text-suave">{erro ? '' : 'Carregando regras…'}</p>
+            ) : aba === 'padrao' ? (
+              <FormPlano regras={regras} empreendimentos={empreendimentos} carregando={carregando} onSimular={(p) => simular(() => api.simular(p))} />
+            ) : (
+              <FormLinear empreendimentos={empreendimentos} carregando={carregando} onSimular={(p) => simular(() => api.simularLinear(p))} />
+            )}
+          </aside>
+
+          <section className="cartao min-h-[22rem] min-w-0" aria-live="polite">
+            {erro && (
+              <div className="mb-5 flex gap-3 rounded-md border border-risco-700 bg-white px-4 py-3" role="alert">
+                <span className="octogono mt-1.5" style={{ '--ponto': 'var(--color-risco-700)' } as CSSProperties} />
+                <div>
+                  <p className="rotulo mb-0.5">Não foi possível simular</p>
+                  <p className="text-tinta">{erro.message}</p>
+                  {erro.detalhes.length > 0 && (
+                    <ul className="mt-1 list-inside list-disc text-[0.92rem] text-suave">
+                      {erro.detalhes.map((d) => (
+                        <li key={d.campo}>{d.mensagem}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+            {sim ? (
+              <Resultado sim={sim} />
+            ) : (
+              !erro && (
+                <div className="flex h-full min-h-[18rem] flex-col items-start justify-center">
+                  <p className="eyebrow mb-2">Cronograma</p>
+                  <p className="max-w-[40ch] font-display text-[1.3rem] leading-snug text-royal-900">
+                    Preencha a negociação ao lado e simule para ver todas as parcelas.
+                  </p>
+                </div>
+              )
+            )}
+          </section>
+        </div>
+      </main>
+
+      <footer className="border-t hairline">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-5 py-6 text-[0.85rem] text-suave sm:px-7">
+          <p>© 2025–2026 João Pedro Simões Rodrigues — todos os direitos reservados.</p>
+          <p className="font-mono text-[0.72rem] uppercase tracking-[0.1em]">Versão de portfólio · dados fictícios</p>
+        </div>
+      </footer>
+    </>
   );
 }
