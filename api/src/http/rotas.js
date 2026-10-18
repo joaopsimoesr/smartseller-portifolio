@@ -7,6 +7,12 @@ const express = require('express');
 const { REGRAS } = require('../config/regras');
 const datas = require('../domain/datas');
 const { simularPlanoPadrao, simularModeloLinear } = require('../domain/simulacao');
+const { gerarFichaNegociacao } = require('../pdf/ficha');
+const {
+  esquemaPlanoPadrao,
+  esquemaModeloLinear,
+  esquemaDiaUtil,
+} = require('./validacao');
 const { converterCSV, EXEMPLO_CSV, COLUNAS } = require('../services/importacao');
 const v = require('./validacao');
 
@@ -63,6 +69,25 @@ function criarRotas({ repoEmpreendimentos: repo, cacheRegras, auth, shadow, fich
     ok(res, simularModeloLinear(req.validado, repo));
   });
 
+  // Ficha PDF: recalcula a simulação no servidor (fonte da verdade) e devolve o arquivo.
+  const enviarFicha = (simular) => async (req, res, next) => {
+    try {
+      const sim = simular(req.validado, repoEmpreendimentos);
+      const pdf = await gerarFichaNegociacao(sim);
+      res
+        .type('application/pdf')
+        .set('Content-Disposition', `attachment; filename="ficha-${sim.empreendimento.id}.pdf"`)
+        .send(Buffer.from(pdf));
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  r.post('/simulacoes/ficha', validar(esquemaPlanoPadrao), enviarFicha(simularPlanoPadrao));
+
+  r.post('/simulacoes/linear/ficha', validar(esquemaModeloLinear), enviarFicha(simularModeloLinear));
+
+  r.get('/datas/dia-util', validar(esquemaDiaUtil, 'query'), (req, res) => {
   r.get('/datas/dia-util', validar(v.esquemaDiaUtil, 'query'), (req, res) => {
     const base = datas.parseISO(req.validado.data);
     const resultado = datas.diasUteisApos(base, req.validado.dias);
